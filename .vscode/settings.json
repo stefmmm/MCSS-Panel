@@ -3,6 +3,7 @@
         "flowbite",
         "Mcss",
         "MCSS",
-        "peekable"
+        "peekable",
+        "triggerless"
     ]
 }

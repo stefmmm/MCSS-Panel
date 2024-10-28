@@ -20,10 +20,10 @@ export interface IServer {
 }
 
 export enum ServerAction {
-    Start = 2,
-    Stop = 1,
-    Restart = 4,
-    Kill = 3
+    Stop = 0,
+    Start = 1,
+    Kill = 2,
+    Restart = 3
 }
 
 export interface IServerSettings {

@@ -20,12 +20,14 @@
 	}
 
 	function serverActionClick(action: any) {
+		console.log('action');
+		console.log(action);
 		dropdownVisible = false;
 		const serverId = get(selectedServerId);
 		if (!serverId) {
 			return;
 		}
-		postServerAction(serverId, action.toLowerCase());
+		postServerAction(serverId, action);
 	}
 </script>
 
@@ -41,9 +43,9 @@
 	{#if dropdownVisible}
 		<div id="dropdown" class="absolute top-full z-20 right-0 min-w-44 py-1.5 mt-1 rounded-lg overflow-hidden shadow-lg divide-gray-150 dark:divide-gray-500 bg-white dark:bg-gray-600">
 			<ul class="w-28 text-gray-700 dark:text-gray-200">
-				{#each Object.values(ServerAction).filter((element) => typeof element === 'string') as action}
+				{#each Object.values(ServerAction).filter((element) => typeof element === 'number') as action}
 					<li>
-						<button on:click={() => serverActionClick(action)} class="flex w-full py-1 px-3 text-sm capitalize hover:bg-gray-100 dark:hover:bg-gray-500">{action}</button>
+						<button on:click={() => serverActionClick(action)} class="flex w-full py-1 px-3 text-sm capitalize hover:bg-gray-100 dark:hover:bg-gray-500">{ServerAction[action]}</button>
 					</li>
 				{/each}
 			</ul>

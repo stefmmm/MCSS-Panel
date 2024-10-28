@@ -2,12 +2,12 @@
 	import { createEventDispatcher } from 'svelte';
 	import Input from '../elements/input.svelte';
 	import Toggle from '../elements/toggle.svelte';
-	import type { IntervalTaskTiming } from '$lib/code/scheduler';
+	import type { IntervalTaskTrigger } from '$lib/code/scheduler';
 
-	export let timing: any;
+	export let trigger: any;
 
-	let interval: number = (timing as IntervalTaskTiming)?.interval;
-	let repeat: boolean = (timing as IntervalTaskTiming)?.repeat;
+	let interval: number = (trigger as IntervalTaskTrigger)?.interval;
+	let repeat: boolean = (trigger as IntervalTaskTrigger)?.repeat;
 	const dispatch = createEventDispatcher();
 
 	function handleInputChange() {

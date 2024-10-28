@@ -23,9 +23,10 @@ export const auth = persisted('user', {
 export let username: string = get(auth).username;
 
 export function login(username: string, password: string, report: (failureReason: LoginFailureReason) => void): void {
-    const request = new Request(`${baseUrl}/auth`, {
+    const request = new Request(`${baseUrl}/panelbackend/auth/login`, {
         method: `POST`,
-        body: JSON.stringify({ username: username, password: password })
+        body: JSON.stringify({ username: username, password: password }),
+        headers: new Headers({ 'content-type': 'application/json' }),
     });
 
     fetch(request)

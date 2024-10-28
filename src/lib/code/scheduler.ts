@@ -8,10 +8,10 @@ export const jobOptions = [
     { value: 2, name: 'Start Backup' }
 ];
 
-export const timingOptions = [
+export const triggerOptions = [
     { value: 0, name: 'Interval' },
     { value: 1, name: 'Time' },
-    { value: 2, name: 'Timeless' }
+    { value: 2, name: 'NoTrigger' }
 ];
 
 // not the same as ServerAction, this starts from 0
@@ -24,9 +24,13 @@ export enum SchedulerServerAction {
 
 export interface ISchedulerDetails {
     tasks: number;
+    triggers: ITriggerDetails;
+}
+
+export interface ITriggerDetails {
     interval: number;
     fixedTime: number;
-    timeless: number;
+    noTrigger: number;
 }
 
 export interface ISchedulerTask {
@@ -34,7 +38,7 @@ export interface ISchedulerTask {
     name: string;
     enabled: boolean;
     playerRequirement: number;
-    timing: TaskTiming;
+    trigger: TaskTrigger;
     jobs: JobTask[];
 }
 
@@ -42,7 +46,7 @@ export interface INewSchedulerTask {
     name: string;
     enabled: boolean;
     playerRequirement: number;
-    timing: TaskTiming;
+    trigger: TaskTrigger;
     jobs: JobTask[];
 }
 
@@ -154,20 +158,20 @@ export function getTaskJob(job: JobTask): Job {
     return Job.empty;
 }
 
-/* Timing */
-export interface TaskTiming { }
+/* Trigger */
+export interface TaskTrigger { }
 
-export class FixedTimeTaskTiming implements TaskTiming {
+export class FixedTimeTaskTrigger implements TaskTrigger {
     repeat: boolean;
     time: string;
 
-      constructor(repeat: boolean, time: string) {
+    constructor(repeat: boolean, time: string) {
         this.repeat = repeat;
         this.time = time;
     }
 }
 
-export class IntervalTaskTiming implements TaskTiming {
+export class IntervalTaskTrigger implements TaskTrigger {
     repeat: boolean;
     interval: number;
 
@@ -177,26 +181,27 @@ export class IntervalTaskTiming implements TaskTiming {
     }
 }
 
-export class TimelessTaskTiming implements TaskTiming { }
+export class TriggerlessTaskTrigger implements TaskTrigger { }
 
-export enum Timing {
-    timeless = "Timeless",
+export enum Trigger {
+    noTrigger = "NoTrigger",
     fixedTime = "Fixed Time",
     interval = "Interval",
 }
 
-export function getTaskTiming(timing: TaskTiming): Timing {
-    if (timing == undefined) {
-        return Timing.timeless;
+export function getTaskTrigger(trigger: TaskTrigger): Trigger {
+    if (trigger == undefined) {
+        return Trigger.noTrigger;
     }
 
-    if (timing instanceof FixedTimeTaskTiming) {
-        return Timing.fixedTime;
-    } else if (timing instanceof IntervalTaskTiming) {
-        return Timing.interval;
+    if (trigger instanceof FixedTimeTaskTrigger) {
+        return Trigger.fixedTime;
+    } else if (trigger instanceof IntervalTaskTrigger) {
+        return Trigger.interval;
     }
 
-    return Timing.timeless;
+    //TODO support player triggers
+    return Trigger.noTrigger;
 }
 
 
@@ -205,7 +210,7 @@ export interface ICreateSchedulerTaskRequest {
     name: string;
     enabled: boolean;
     playerRequirement: number
-    timing: object
+    trigger: object
     jobs: object[]
 }
 
@@ -217,18 +222,17 @@ export function translateRawSchedulerResponse(data: any): ISchedulerTask {
         enabled: data.enabled,
         name: data.name,
         playerRequirement: data.playerRequirement,
-        timing: new TimelessTaskTiming(),
+        trigger: new TriggerlessTaskTrigger(),
         jobs: new Array()
     }
 
-    if ('interval' in data.timing) {
-        task.timing = new IntervalTaskTiming(data.timing.repeat, data.timing.interval);
-    } else if ('time' in data.timing) {
-        task.timing = new FixedTimeTaskTiming(data.timing.repeat, data.timing.time);
+    if ('interval' in data.trigger) {
+        task.trigger = new IntervalTaskTrigger(data.trigger.repeat, data.trigger.interval);
+    } else if ('time' in data.trigger) {
+        task.trigger = new FixedTimeTaskTrigger(data.trigger.repeat, data.trigger.time);
     } else {
-        task.timing = new TimelessTaskTiming();
+        task.trigger = new TriggerlessTaskTrigger();
     }
-
 
     for (let job of data.jobs) {
         if ('commands' in job) {
@@ -253,7 +257,7 @@ export function getTaskEnabledIcon(task: ISchedulerTask): string {
         return mdiClose;
     }
 
-    if (task.timing instanceof TimelessTaskTiming) {
+    if (task.trigger instanceof TriggerlessTaskTrigger) {
         return mdiMinus;
     }
 
@@ -265,7 +269,7 @@ export function getTaskEnabledIconColor(task: ISchedulerTask): string {
         return '';
     }
 
-    if (task.timing instanceof TimelessTaskTiming) {
+    if (task.trigger instanceof TriggerlessTaskTrigger) {
         return '';
     }
 

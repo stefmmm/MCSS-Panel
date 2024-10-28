@@ -12,16 +12,16 @@
 	import { Permission, hasPermission } from '$lib/code/permissions';
 	import Warning from '$lib/components/elements/warning.svelte';
 	import { Tabs, TabItem } from 'flowbite-svelte';
-	import TaskTimingIntervalInput from '$lib/components/scheduler/taskTimingIntervalInput.svelte';
-	import TaskTimingFixedTimeInput from '$lib/components/scheduler/taskTimingFixedTimeInput.svelte';
+	import TaskTriggerIntervalInput from '$lib/components/scheduler/taskTriggerIntervalInput.svelte';
+	import TaskTriggerFixedTimeInput from '$lib/components/scheduler/taskTriggerFixedTimeInput.svelte';
 	import TaskPlayerRequirementInput from '$lib/components/scheduler/taskPlayerRequirementInput.svelte';
-	import { timingOptions, type INewSchedulerTask, type JobTask, type TaskTiming, IntervalTaskTiming, FixedTimeTaskTiming } from '$lib/code/scheduler';
+	import { triggerOptions, type INewSchedulerTask, type JobTask, type TaskTrigger, IntervalTaskTrigger, FixedTimeTaskTrigger } from '$lib/code/scheduler';
 	import { WarningType } from '$lib/code/panel';
 	import JobsList from '$lib/components/scheduler/jobsList.svelte';
 
 	let name: string = '';
 	let jobs: Array<JobTask> = [];
-	let timing: TaskTiming;
+	let trigger: TaskTrigger;
 	let playerRequirement: number;
 
 	const tabItemStyle = 'inline-block text-sm font-medium text-center disabled:cursor-not-allowed p-4 w-full group-first:rounded-l-lg group-last:rounded-r-lg text-white bg-blue-500 focus:ring-4 focus:ring-primary-300 focus:outline-none dark:bg-blue-700 dark:text-white';
@@ -31,8 +31,8 @@
 			name: name,
 			enabled: true,
 			jobs: jobs,
-			timing: timing,
-			playerRequirement: playerRequirement
+			trigger: trigger,
+			playerRequirement
 		};
 
 		createSchedulerTask($selectedServerId, newTask, (wasSuccess: boolean) => {
@@ -49,12 +49,12 @@
 		jobs = updatedJobs.detail;
 	}
 
-	function handleTaskTimingIntervalInput(event: any) {
-		timing = new IntervalTaskTiming(event.detail.repeat, event.detail.interval);
+	function handleTaskTriggerIntervalInput(event: any) {
+		trigger = new IntervalTaskTrigger(event.detail.repeat, event.detail.interval);
 	}
 
-	function handleTaskTimingFixedTimeInput(event: any) {
-		timing = new FixedTimeTaskTiming(event.detail.repeat, event.detail.fixedTime);
+	function handleTaskTriggerFixedTimeInput(event: any) {
+		trigger = new FixedTimeTaskTrigger(event.detail.repeat, event.detail.fixedTime);
 	}
 
 	function handleTaskPlayerRequirementInput(event: any) {
@@ -91,23 +91,24 @@
 			</BoxedContainer>
 			<BoxedContainer class="space-y-3">
 				<span class="space-y-1 text-sm font-medium">
-					<p class="">Timing</p>
+					<p class="">Trigger</p>
 					<p class="text-gray-400">Choose when and how frequent this task should run.</p>
 				</span>
+				<!--TODO support player triggers -->
 
 				<Tabs style="full" defaultClass="flex rounded-lg divide-x rtl:divide-x-reverse divide-gray-200 shadow dark:divide-gray-700" contentClass="bg-inherit pt-2">
 					<TabItem class="w-full" activeClasses={tabItemStyle} open>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[0].name}</span>
-						<TaskTimingIntervalInput timing={new IntervalTaskTiming(true, 0)} on:update={handleTaskTimingIntervalInput} />
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[0].name}</span>
+						<TaskTriggerIntervalInput trigger={new IntervalTaskTrigger(true, 0)} on:update={handleTaskTriggerIntervalInput} />
 					</TabItem>
 					<TabItem class="w-full" activeClasses={tabItemStyle}>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[1].name}</span>
-						<TaskTimingFixedTimeInput timing={new FixedTimeTaskTiming(true, '')} on:update={handleTaskTimingFixedTimeInput} />
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[1].name}</span>
+						<TaskTriggerFixedTimeInput trigger={new FixedTimeTaskTrigger(true, '')} on:update={handleTaskTriggerFixedTimeInput} />
 					</TabItem>
 					<TabItem class="w-full" activeClasses={tabItemStyle}>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[2].name}</span>
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[2].name}</span>
 						<p class="text-sm text-gray-500 dark:text-gray-400 text-center">
-							A <b>timeless</b> task has no timing options.
+							A <b>triggerless</b> task has no trigger options.
 						</p>
 					</TabItem>
 				</Tabs>

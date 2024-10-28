@@ -2,12 +2,12 @@
 	import { createEventDispatcher } from 'svelte';
 	import Input from '../elements/input.svelte';
 	import Toggle from '../elements/toggle.svelte';
-	import { FixedTimeTaskTiming } from '$lib/code/scheduler';
+	import { FixedTimeTaskTrigger } from '$lib/code/scheduler';
 
-	export let timing: any;
+	export let trigger: any;
 
-	let fixedTime: string = (timing as FixedTimeTaskTiming)?.time;
-	let repeat: boolean = (timing as FixedTimeTaskTiming)?.repeat;
+	let fixedTime: string = (trigger as FixedTimeTaskTrigger)?.time;
+	let repeat: boolean = (trigger as FixedTimeTaskTrigger)?.repeat;
 	const dispatch = createEventDispatcher();
 
 	function handleInputChange() {

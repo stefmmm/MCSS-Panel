@@ -13,9 +13,9 @@
 	import { editSchedulerTask, getSchedulerTaskDetails } from '$lib/code/api';
 	import Warning from '$lib/components/elements/warning.svelte';
 	import { Permission, hasPermission } from '$lib/code/permissions';
-	import { type ISchedulerTask, timingOptions, type JobTask, type TaskTiming, IntervalTaskTiming, FixedTimeTaskTiming, TimelessTaskTiming, type IEditSchedulerTask } from '$lib/code/scheduler';
-	import TaskTimingIntervalInput from '$lib/components/scheduler/taskTimingIntervalInput.svelte';
-	import TaskTimingFixedTimeInput from '$lib/components/scheduler/taskTimingFixedTimeInput.svelte';
+	import { type ISchedulerTask, triggerOptions, type JobTask, type TaskTrigger, IntervalTaskTrigger, FixedTimeTaskTrigger, TriggerlessTaskTrigger, type IEditSchedulerTask } from '$lib/code/scheduler';
+	import TaskTriggerIntervalInput from '$lib/components/scheduler/taskTriggerIntervalInput.svelte';
+	import TaskTriggerFixedTimeInput from '$lib/components/scheduler/taskTriggerFixedTimeInput.svelte';
 	import TaskPlayerRequirementInput from '$lib/components/scheduler/taskPlayerRequirementInput.svelte';
 	import Toggle from '$lib/components/elements/toggle.svelte';
 	import { WarningType } from '$lib/code/panel';
@@ -26,7 +26,7 @@
 	let enabled: boolean = true;
 	let jobs: Array<JobTask> = [];
 
-	let timing: TaskTiming;
+	let trigger: TaskTrigger;
 	let playerRequirement: number;
 
 	let originalName: string = '';
@@ -54,7 +54,7 @@
 				name = taskDetails.name;
 				enabled = taskDetails.enabled;
 				jobs = taskDetails.jobs;
-				timing = taskDetails.timing;
+				trigger = taskDetails.trigger;
 				playerRequirement = taskDetails.playerRequirement;
 
 				originalName = taskDetails.name;
@@ -67,7 +67,7 @@
 			name: name,
 			enabled: enabled,
 			jobs: jobs,
-			timing: timing,
+			trigger: trigger,
 			playerRequirement: playerRequirement
 		};
 
@@ -91,13 +91,13 @@
 		areButtonsDisabled = false;
 	}
 
-	function handleTaskTimingIntervalInput(event: any) {
-		timing = new IntervalTaskTiming(event.detail.repeat, event.detail.interval);
+	function handleTaskTriggerIntervalInput(event: any) {
+		trigger = new IntervalTaskTrigger(event.detail.repeat, event.detail.interval);
 		areButtonsDisabled = false;
 	}
 
-	function handleTaskTimingFixedTimeInput(event: any) {
-		timing = new FixedTimeTaskTiming(event.detail.repeat, event.detail.fixedTime);
+	function handleTaskTriggerFixedTimeInput(event: any) {
+		trigger = new FixedTimeTaskTrigger(event.detail.repeat, event.detail.fixedTime);
 		areButtonsDisabled = false;
 	}
 
@@ -131,7 +131,7 @@
 			<Warning message={errorMessage} />
 		{/if}
 
-		<Warning message="Keep in mind that it's not possible to switch between jobs or timings." type={WarningType.Info} />
+		<Warning message="Keep in mind that it's not possible to switch between jobs or triggers." type={WarningType.Info} />
 
 		<form on:submit|preventDefault={updateTask}>
 			<BoxedContainer class="space-y-3">
@@ -142,23 +142,24 @@
 			</BoxedContainer>
 			<BoxedContainer class="space-y-3">
 				<span class="space-y-1 text-sm font-medium">
-					<p class="">Timing</p>
+					<p class="">Trigger</p>
 					<p class="text-gray-400">Choose when and how frequent this task should run.</p>
 				</span>
+				<!--TODO support player triggers -->
 
 				<Tabs style="full" defaultClass="flex rounded-lg divide-x rtl:divide-x-reverse divide-gray-200 shadow dark:divide-gray-700" contentClass="bg-inherit pt-2">
-					<TabItem class="w-full" open={timing instanceof IntervalTaskTiming ? true : false} disabled={timing instanceof IntervalTaskTiming ? false : true} activeClasses={tabItemStyle}>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[0].name}</span>
-						<TaskTimingIntervalInput {timing} on:update={handleTaskTimingIntervalInput} />
+					<TabItem class="w-full" open={trigger instanceof IntervalTaskTrigger ? true : false} disabled={trigger instanceof IntervalTaskTrigger ? false : true} activeClasses={tabItemStyle}>
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[0].name}</span>
+						<TaskTriggerIntervalInput {trigger} on:update={handleTaskTriggerIntervalInput} />
 					</TabItem>
-					<TabItem class="w-full" open={timing instanceof FixedTimeTaskTiming ? true : false} disabled={timing instanceof FixedTimeTaskTiming ? false : true} activeClasses={tabItemStyle}>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[1].name}</span>
-						<TaskTimingFixedTimeInput {timing} on:update={handleTaskTimingFixedTimeInput} />
+					<TabItem class="w-full" open={trigger instanceof FixedTimeTaskTrigger ? true : false} disabled={trigger instanceof FixedTimeTaskTrigger ? false : true} activeClasses={tabItemStyle}>
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[1].name}</span>
+						<TaskTriggerFixedTimeInput {trigger} on:update={handleTaskTriggerFixedTimeInput} />
 					</TabItem>
-					<TabItem class="w-full" open={timing instanceof TimelessTaskTiming ? true : false} disabled={timing instanceof TimelessTaskTiming ? false : true} activeClasses={tabItemStyle}>
-						<span class="text-xs sm:text-sm" slot="title">{timingOptions[2].name}</span>
+					<TabItem class="w-full" open={trigger instanceof TriggerlessTaskTrigger ? true : false} disabled={trigger instanceof TriggerlessTaskTrigger ? false : true} activeClasses={tabItemStyle}>
+						<span class="text-xs sm:text-sm" slot="title">{triggerOptions[2].name}</span>
 						<p class="text-sm text-gray-500 dark:text-gray-400 text-center">
-							A <b>timeless</b> task has no timing options.
+							A <b>triggerless</b> task has no trigger options.
 						</p>
 					</TabItem>
 				</Tabs>
@@ -168,7 +169,7 @@
 				<TaskPlayerRequirementInput {playerRequirement} on:update={handleTaskPlayerRequirementInput} />
 			</BoxedContainer>
 
-			{#if timing instanceof TimelessTaskTiming == false}
+			{#if trigger instanceof TriggerlessTaskTrigger == false}
 				<BoxedContainer>
 					<Toggle bind:value={enabled} label={'Enable Task'} on:toggle={handleInputChange} />
 				</BoxedContainer>

@@ -8,7 +8,7 @@ function axiosClient(): AxiosInstance {
 
 	const axiosClient = axios.create({
 		baseURL: baseUrl,
-		headers: { apiKey: get(auth)?.apiKey ?? '' }
+		headers: { apiKey: get(auth)?.apiKey ?? '', 'Content-Type': 'application/json' },
 	});
 
 	axiosClient.interceptors.response.use(

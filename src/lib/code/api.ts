@@ -35,7 +35,7 @@ export enum Filter {
 
 export function getMcssSettings(section: McssSettingsSection, report: (settings: any) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getMcssSettings");
-    axiosClient().get(`/api/v2/mcss/settings/${section}`)
+    axiosClient().get(`/api/v3/mcss/settings/${section}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -58,7 +58,7 @@ export function getMcssSettings(section: McssSettingsSection, report: (settings:
 
 export function updateMcssSettings(settings: any, report: (wasSuccess: boolean) => void) {
     log("API Request: editServer");
-    axiosClient().patch(`/api/v2/mcss/settings`, JSON.stringify(settings))
+    axiosClient().patch(`/api/v3/mcss/settings`, JSON.stringify(settings))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -79,7 +79,7 @@ export function getServers(filter: Filter = Filter.None): void {
     isLoadingServers.set(true);
 
     // no logging here on purpose, too many requests
-    axiosClient().get(`/api/v2/servers?filter=${filter}`)
+    axiosClient().get(`/api/v3/servers?filter=${filter}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -109,7 +109,7 @@ export function getServers(filter: Filter = Filter.None): void {
 
 export function getServer(serverId: string, report: (wasSuccess: boolean, server: IServerSettings) => void) {
     log("API Request: getServer");
-    axiosClient().get(`/api/v2/servers/${serverId}`)
+    axiosClient().get(`/api/v3/servers/${serverId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -132,7 +132,7 @@ export function getServer(serverId: string, report: (wasSuccess: boolean, server
 
 export function editServer(serverId: string, settings: IServerSettings, report: (wasSuccess: boolean) => void) {
     log("API Request: editServer");
-    axiosClient().put(`/api/v2/servers/${serverId}`, JSON.stringify(settings))
+    axiosClient().put(`/api/v3/servers/${serverId}`, JSON.stringify(settings))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -155,7 +155,7 @@ export async function postServerAction(serverId: string, action: string) {
     }
 
     log("API Request: postServerAction");
-    axiosClient().post(`/api/v2/servers/${serverId}/execute/action`, JSON.stringify({ action: action }))
+    axiosClient().post(`/api/v3/servers/${serverId}/execute/action`, JSON.stringify({ action: action }))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -178,7 +178,7 @@ export async function postMassServerAction(serverIds: string[], action: ServerAc
     }
 
     log("API Request: postMassServerAction");
-    axiosClient().post(`/api/v2/servers/execute/action`, JSON.stringify({ action: action, serverIds: serverIds }))
+    axiosClient().post(`/api/v3/servers/execute/action`, JSON.stringify({ action: action, serverIds: serverIds }))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -206,7 +206,7 @@ export async function postServerCommand(serverId: string, input: string) {
     }
 
     log("API Request: postServerCommand");
-    axiosClient().post(`/api/v2/servers/${serverId}/execute/command`, JSON.stringify({ command: input }))
+    axiosClient().post(`/api/v3/servers/${serverId}/execute/command`, JSON.stringify({ command: input }))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -227,7 +227,7 @@ export function getServerStatus(serverId: string, report: (latestStats: Stats) =
     }
 
     log("API Request: getServerStatus");
-    axiosClient().get(`/api/v2/servers/${serverId}/stats`)
+    axiosClient().get(`/api/v3/servers/${serverId}/stats`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -279,7 +279,7 @@ export function getServerConsole(serverId: string, report: (consoleLines: string
     const reverseConsoleLines = get(settings)?.reverseConsoleLines ?? false;
 
     log("API Request: getServerConsole");
-    axiosClient().get(`/api/v2/servers/${serverId}/console?amountOfLines=${amountOfConsoleLines}&reversed=${reverseConsoleLines}`)
+    axiosClient().get(`/api/v3/servers/${serverId}/console?amountOfLines=${amountOfConsoleLines}&reversed=${reverseConsoleLines}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -305,7 +305,7 @@ export function getIsServerConsoleOutdated(serverId: string, secondLastLine: str
     }
 
     log("API Request: getIsServerConsoleOutdated");
-    axiosClient().get(`/api/v2/servers/${serverId}/console/outdated?secondLastLine=${secondLastLine}&lastLine=${lastLine}`)
+    axiosClient().get(`/api/v3/servers/${serverId}/console/outdated?secondLastLine=${secondLastLine}&lastLine=${lastLine}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -327,7 +327,7 @@ export function getIsServerConsoleOutdated(serverId: string, secondLastLine: str
 
 export function getPanelUsers(report: (users: IPanelUser[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getPanelUsers");
-    axiosClient().get(`/api/v2/users`)
+    axiosClient().get(`/api/v3/users`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -368,7 +368,7 @@ export function getPanelUsers(report: (users: IPanelUser[]) => void, completed: 
 
 export function getPanelUser(userId: string, report: (wasSuccess: boolean, user: IPanelUser) => void) {
     log("API Request: getPanelUser");
-    axiosClient().get(`/api/v2/users/${userId}`)
+    axiosClient().get(`/api/v3/users/${userId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -418,7 +418,7 @@ export function createPanelUser(newUser: INewPanelUser, completed: (wasSuccess: 
     ServerAccessDetails.UpdatePermissionTargetObject(newUser.serverAccessDetails, requestBody);
 
     log("API Request: createPanelUser");
-    axiosClient().post(`/api/v2/users`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/users`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 201) {
                 return Promise.reject(response);
@@ -449,7 +449,7 @@ export function editPanelUser(updatedUser: IEditPanelUser, completed: (wasSucces
     ServerAccessDetails.UpdatePermissionTargetObject(updatedUser.serverAccessDetails, requestBody);
 
     log("API Request: editPanelUser");
-    axiosClient().put(`/api/v2/users/${updatedUser.userId}`, JSON.stringify(requestBody))
+    axiosClient().put(`/api/v3/users/${updatedUser.userId}`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -468,7 +468,7 @@ export function editPanelUser(updatedUser: IEditPanelUser, completed: (wasSucces
 
 export function deletePanelUser(userId: string, completed: (wasSuccess: boolean) => void): void {
     log("API Request: deletePanelUser");
-    axiosClient().delete(`/api/v2/users/${userId}`)
+    axiosClient().delete(`/api/v3/users/${userId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -494,7 +494,7 @@ export function editUserAccount(updatedUserAccount: IEditUserAccount, completed:
     }
 
     log("API Request: editUserAccount");
-    axiosClient().put(`/api/v2/users/current/account`, JSON.stringify(requestBody))
+    axiosClient().put(`/api/v3/users/current/account`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -519,7 +519,7 @@ export function deleteUserAccount(deleteUserAccount: IDeleteUserAccount, complet
     }
 
     log("API Request: deleteUserAccount");
-    axiosClient().post(`/api/v2/users/current/account`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/users/current/account`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -538,7 +538,7 @@ export function deleteUserAccount(deleteUserAccount: IDeleteUserAccount, complet
 
 export function wipeUserSessions(completed: (wasSuccess: boolean) => void) {
     log("API Request: wipeUserSessions");
-    axiosClient().post(`/api/v2/users/wipe/sessions`)
+    axiosClient().post(`/api/v3/users/wipe/sessions`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -557,7 +557,7 @@ export function wipeUserSessions(completed: (wasSuccess: boolean) => void) {
 
 export function getPanelUserSettings(report: (wasSuccess: boolean, panelUserSettings: IPanelSettings) => void) {
     log("API Request: getPanelUserSettings");
-    axiosClient().get(`/api/v2/users/current/settings`)
+    axiosClient().get(`/api/v3/panel/account/current/settings`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -605,7 +605,7 @@ export function editPanelSettings(updatedSettings: IEditPanelSettings, completed
     }
 
     log("API Request: editPanelSettings");
-    axiosClient().put(`/api/v2/users/current/settings`, JSON.stringify(requestBody))
+    axiosClient().put(`/api/v3/panel/account/current/settings`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -629,7 +629,7 @@ export function uploadUserAvatar(base64: string, completed: (wasSuccess: boolean
     }
 
     log("API Request: uploadUserAvatar");
-    axiosClient().post(`/api/v2/users/current/avatar`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/panel/account/current/avatar`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -647,7 +647,7 @@ export function uploadUserAvatar(base64: string, completed: (wasSuccess: boolean
 
 export function getBackups(serverId: string, report: (backups: Backup[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getBackups");
-    axiosClient().get(`/api/v2/servers/${serverId}/backups`)
+    axiosClient().get(`/api/v3/servers/${serverId}/backups`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -669,7 +669,7 @@ export function getBackups(serverId: string, report: (backups: Backup[]) => void
 
 export function getBackupStats(serverId: string, report: (stats: IBackupStats) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getBackupStats");
-    axiosClient().get(`/api/v2/servers/${serverId}/backups/stats`)
+    axiosClient().get(`/api/v3/servers/${serverId}/backups/stats`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -691,7 +691,7 @@ export function getBackupStats(serverId: string, report: (stats: IBackupStats) =
 
 export function getBackupDetails(serverId: string, backupId: string, report: (wasSuccess: boolean, backupDetails: IBackupDetails) => void) {
     log("API Request: getBackup");
-    axiosClient().get(`/api/v2/servers/${serverId}/backups/${backupId}`)
+    axiosClient().get(`/api/v3/servers/${serverId}/backups/${backupId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -719,7 +719,7 @@ export function editBackup(serverId: string, backupId: string, backupSettings: I
     backupSettings.fileBlacklist = backupSettings.fileBlacklist.map(a => a);
     backupSettings.folderBlacklist = backupSettings.folderBlacklist.map(a => a);
 
-    axiosClient().put(`/api/v2/servers/${serverId}/backups/${backupId}`, JSON.stringify(backupSettings))
+    axiosClient().put(`/api/v3/servers/${serverId}/backups/${backupId}`, JSON.stringify(backupSettings))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -737,7 +737,7 @@ export function editBackup(serverId: string, backupId: string, backupSettings: I
 
 export function runBackup(serverId: string, backupId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: runBackup");
-    axiosClient().post(`/api/v2/servers/${serverId}/backups/${backupId}`,)
+    axiosClient().post(`/api/v3/servers/${serverId}/backups/${backupId}`,)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -767,9 +767,11 @@ export function createBackup(serverId: string, newBackup: INewBackup, completed:
         fileBlacklist: newBackup.fileBlacklist.map(a => a),
         folderBlacklist: newBackup.folderBlacklist.map(a => a)
     }
+    console.log(requestBody)
+    console.log(JSON.stringify(requestBody))
 
     log("API Request: createBackup");
-    axiosClient().post(`/api/v2/servers/${serverId}/backups`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/servers/${serverId}/backups`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 201) {
                 return Promise.reject(response);
@@ -788,7 +790,7 @@ export function createBackup(serverId: string, newBackup: INewBackup, completed:
 
 export function deleteBackup(serverId: string, backupId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: deleteBackup");
-    axiosClient().delete(`/api/v2/servers/${serverId}/backups/${backupId}`,)
+    axiosClient().delete(`/api/v3/servers/${serverId}/backups/${backupId}`,)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -807,7 +809,7 @@ export function deleteBackup(serverId: string, backupId: string, completed: (was
 
 export function getBackupHistory(serverId: string, report: (backups: BackupHistory[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getBackupHistory");
-    axiosClient().get(`/api/v2/servers/${serverId}/backups/history`)
+    axiosClient().get(`/api/v3/servers/${serverId}/backups/history`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -829,7 +831,7 @@ export function getBackupHistory(serverId: string, report: (backups: BackupHisto
 
 export function deleteBackupHistory(serverId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: deleteBackupHistory");
-    axiosClient().post(`/api/v2/servers/${serverId}/backups/history/clear`,)
+    axiosClient().post(`/api/v3/servers/${serverId}/backups/history/clear`,)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -848,7 +850,7 @@ export function deleteBackupHistory(serverId: string, completed: (wasSuccess: bo
 
 export function getSchedulerTasks(serverId: string, report: (backups: ISchedulerTask[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getSchedulerTasks");
-    axiosClient().get(`/api/v2/servers/${serverId}/scheduler/tasks`)
+    axiosClient().get(`/api/v3/scheduler/${serverId}/tasks`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -876,7 +878,7 @@ export function getSchedulerTasks(serverId: string, report: (backups: IScheduler
 
 export function getSchedulerDetails(serverId: string, report: (details: ISchedulerDetails) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getSchedulerDetails");
-    axiosClient().get(`/api/v2/servers/${serverId}/scheduler`)
+    axiosClient().get(`/api/v3/scheduler/${serverId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -898,7 +900,7 @@ export function getSchedulerDetails(serverId: string, report: (details: ISchedul
 
 export function getSchedulerTaskDetails(serverId: string, taskId: string, report: (wasSuccess: boolean, taskDetails: ISchedulerTask) => void) {
     log("API Request: getSchedulerTaskDetails");
-    axiosClient().get(`/api/v2/servers/${serverId}/scheduler/tasks/${taskId}`)
+    axiosClient().get(`/api/v3/scheduler/${serverId}/tasks/${taskId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -927,11 +929,11 @@ export function editSchedulerTask(serverId: string, taskId: string, updatedTask:
         name: updatedTask.name,
         enabled: updatedTask.enabled,
         playerRequirement: updatedTask.playerRequirement,
-        timing: updatedTask.timing,
+        trigger: updatedTask.trigger,
         jobs: updatedTask.jobs
     }
 
-    axiosClient().put(`/api/v2/servers/${serverId}/scheduler/tasks/${taskId}`, JSON.stringify(updatedTask))
+    axiosClient().put(`/api/v3/scheduler/${serverId}/tasks/${taskId}`, JSON.stringify(updatedTask))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -950,7 +952,7 @@ export function editSchedulerTask(serverId: string, taskId: string, updatedTask:
 export function runSchedulerTask(serverId: string, taskId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: runSchedulerTask");
 
-    axiosClient().post(`/api/v2/servers/${serverId}/scheduler/tasks/${taskId}`)
+    axiosClient().post(`/api/v3/scheduler/${serverId}/tasks/${taskId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -975,11 +977,11 @@ export function createSchedulerTask(serverId: string, newTask: INewSchedulerTask
         name: newTask.name,
         enabled: newTask.enabled,
         playerRequirement: newTask.playerRequirement,
-        timing: newTask.timing,
+        trigger: newTask.trigger,
         jobs: newTask.jobs
     }
 
-    axiosClient().post(`/api/v2/servers/${serverId}/scheduler/tasks`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/scheduler/${serverId}/tasks`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 201) {
                 return Promise.reject(response);
@@ -998,7 +1000,7 @@ export function createSchedulerTask(serverId: string, newTask: INewSchedulerTask
 
 export function deleteSchedulerTask(serverId: string, taskId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: deleteSchedulerTask");
-    axiosClient().delete(`/api/v2/servers/${serverId}/scheduler/tasks/${taskId}`)
+    axiosClient().delete(`/api/v3/scheduler/${serverId}/tasks/${taskId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1017,7 +1019,7 @@ export function deleteSchedulerTask(serverId: string, taskId: string, completed:
 
 export function getApiKeys(report: (apiKey: IApiKey[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getApiKeys");
-    axiosClient().get(`/api/v2/keys`)
+    axiosClient().get(`/api/v3/apikeys`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1067,7 +1069,7 @@ export function createApiKey(newApiKey: INewApiKey, completed: (wasSuccess: bool
     ServerAccessDetails.UpdatePermissionTargetObject(newApiKey.serverAccessDetails, requestBody);
 
     log("API Request: createApiKey");
-    axiosClient().post(`/api/v2/keys`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/apikeys`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 201) {
                 return Promise.reject(response);
@@ -1089,7 +1091,7 @@ export function createApiKey(newApiKey: INewApiKey, completed: (wasSuccess: bool
 
 export function deleteApiKey(apiKeyId: string, completed: (wasSuccess: boolean) => void): void {
     log("API Request: deleteApiKey");
-    axiosClient().delete(`/api/v2/keys/${apiKeyId}`)
+    axiosClient().delete(`/api/v3/apikeys/${apiKeyId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1108,7 +1110,7 @@ export function deleteApiKey(apiKeyId: string, completed: (wasSuccess: boolean) 
 
 export function getWebhooks(report: (webhooks: IWebhook[]) => void, completed: (wasSuccess: boolean) => void): void {
     log("API Request: getWebhooks");
-    axiosClient().get(`/api/v2/webhooks`)
+    axiosClient().get(`/api/v3/webhooks`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1139,7 +1141,7 @@ export function getWebhooks(report: (webhooks: IWebhook[]) => void, completed: (
 
 export function getWebhookDetails(WebhookId: string, report: (wasSuccess: boolean, webhook: IWebhook) => void) {
     log("API Request: getWebhookDetails");
-    axiosClient().get(`/api/v2/webhooks/${WebhookId}`)
+    axiosClient().get(`/api/v3/webhooks/${WebhookId}`)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1187,7 +1189,7 @@ export function createWebhook(newWebhook: INewWebhook, completed: (wasSuccess: b
     }
 
     log("API Request: createWebhook");
-    axiosClient().post(`/api/v2/webhooks`, JSON.stringify(requestBody))
+    axiosClient().post(`/api/v3/webhooks`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 201) {
                 return Promise.reject(response);
@@ -1219,7 +1221,7 @@ export function editWebhooks(webhookId: string, editedWebhook: IEditWebhook, rep
     }
 
     log("API Request: editWebhooks");
-    axiosClient().put(`/api/v2/webhooks/${webhookId}`, JSON.stringify(requestBody))
+    axiosClient().put(`/api/v3/webhooks/${webhookId}`, JSON.stringify(requestBody))
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);
@@ -1237,7 +1239,7 @@ export function editWebhooks(webhookId: string, editedWebhook: IEditWebhook, rep
 
 export function deleteWebhook(webhookId: string, completed: (wasSuccess: boolean) => void) {
     log("API Request: deleteWebhook");
-    axiosClient().delete(`/api/v2/webhooks/${webhookId}`,)
+    axiosClient().delete(`/api/v3/webhooks/${webhookId}`,)
         .then((response) => {
             if (response?.status !== 200) {
                 return Promise.reject(response);

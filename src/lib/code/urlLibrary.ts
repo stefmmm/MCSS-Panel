@@ -17,5 +17,5 @@ export function getUrl(url: Url) {
 }
 
 export function getURLToCurrentUserAvatar(): string {
-    return `${baseUrl}/backend/users/${get(auth).userId}/avatar?sasKey=${get(auth).sharedAccessSignature}`;
+    return `${baseUrl}/panelbackend/users/${get(auth).userId}/avatar?sasKey=${get(auth).sharedAccessSignature}`;
 }
