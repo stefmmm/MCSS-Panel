@@ -54,7 +54,6 @@
 	}
 
 	function handleSave() {
-		console.log('handle handleSave');
 		serverAccessDetails.update(serverSelection, permissionSelection, serverAccessDetails.hasAccessToAllServers);
 		showCustomServersModal = false;
 

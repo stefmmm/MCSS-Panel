@@ -22,6 +22,9 @@ import type { IEditPanelSettings, IEditPanelSettingsRequest, IPanelSettings } fr
 import { calculateUptime, type Memory, type Stats } from './statistics';
 import type { ICreateUserRequest, IDeleteUserAccount, IDeleteUserAccountRequest, IEditPanelUser, IEditUserAccount, IGetPanelUserSettingsResponse, IGetUserDetailsResponse, IGetUsersListResponse, INewPanelUser, IPanelUser, IUpdateUserAccountRequest, IUpdateUserRequest, IUserAvatarRequest } from './user';
 import type { McssSettingsSection } from './mcss';
+import { SSE } from 'sse.js';
+import { baseUrl } from './routing';
+import { auth } from './auth';
 
 export enum Filter {
     None,
@@ -287,7 +290,8 @@ export function getServerConsole(serverId: string, report: (consoleLines: string
 
             log(response?.status);
             log(`amount of lines: ${response?.data?.length}`);
-            return response?.data?.join('\r\n') ?? [];
+
+            return response?.data ?? [];
         })
         .then((consoleLines) => {
             report(consoleLines);
@@ -299,30 +303,11 @@ export function getServerConsole(serverId: string, report: (consoleLines: string
         })
 }
 
-export function getIsServerConsoleOutdated(serverId: string, secondLastLine: string, lastLine: string, report: (isOutdated: boolean) => void, completed: (wasSuccess: boolean) => void): void {
-    if (!serverId || !hasPermission(Permission.viewConsole, serverId)) {
-        return;
-    }
-
-    log("API Request: getIsServerConsoleOutdated");
-    axiosClient().get(`/api/v3/servers/${serverId}/console/outdated?secondLastLine=${secondLastLine}&lastLine=${lastLine}`)
-        .then((response) => {
-            if (response?.status !== 200) {
-                return Promise.reject(response);
-            }
-
-            log(response?.status);
-            log(response?.data);
-            return response?.data?.isOutdated ?? false;
-        })
-        .then((isConsoleOutdated) => {
-            report(isConsoleOutdated);
-            completed(true);
-        })
-        .catch((error) => {
-            console.error(`Failed to check if console is outdated on server: ${serverId} Error: ${error}`)
-            completed(false);
-        })
+// TODO make a custom wrapper for the SSE package
+export function GetConsoleStream(serverId: string): SSE {
+    return new SSE(`${baseUrl}/api/v3/servers/${serverId}/console/events`, {
+        headers: { apiKey: get(auth)?.apiKey }
+    });
 }
 
 export function getPanelUsers(report: (users: IPanelUser[]) => void, completed: (wasSuccess: boolean) => void): void {
@@ -767,8 +752,6 @@ export function createBackup(serverId: string, newBackup: INewBackup, completed:
         fileBlacklist: newBackup.fileBlacklist.map(a => a),
         folderBlacklist: newBackup.folderBlacklist.map(a => a)
     }
-    console.log(requestBody)
-    console.log(JSON.stringify(requestBody))
 
     log("API Request: createBackup");
     axiosClient().post(`/api/v3/servers/${serverId}/backups`, JSON.stringify(requestBody))

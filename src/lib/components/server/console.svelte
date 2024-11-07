@@ -1,42 +1,53 @@
 <script lang="ts">
-	import { onDestroy, beforeUpdate, afterUpdate } from 'svelte';
+	import { onDestroy, beforeUpdate, afterUpdate, onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import { browser } from '$app/environment';
 	import { settings } from '$lib/code/storage';
-	import { getServerConsole, getIsServerConsoleOutdated, postServerCommand } from '$lib/code/api';
+	import { GetConsoleStream, getServerConsole, postServerCommand } from '$lib/code/api';
 	import { hasPermission, Permission } from '$lib/code/permissions';
-	import { mdiChat, mdiRefresh, mdiSend } from '@mdi/js';
+	import { mdiChat, mdiRefresh, mdiSend, mdiArrowVerticalLock, mdiTextBoxRemove } from '@mdi/js';
 	import Icon from '../elements/icon.svelte';
 	import { Popover } from 'flowbite-svelte';
 	import { selectedServerId } from '$lib/code/global';
+	import { SSE } from 'sse.js';
+	import XTerminal from '$lib/code/xTerminal';
 
 	export let fillScreen: boolean = false;
 
 	export function refreshConsole() {
-		const serverId = get(selectedServerId);
-		reloadConsole(serverId);
+		reloadConsole();
 	}
 
+	let sseClient: SSE;
+	let term: XTerminal;
 	let loadingConsole: boolean;
-	let serverConsole: string[] = [];
 	let consoleInput: string;
 	let textarea: HTMLTextAreaElement;
 	let consoleRequiresUpdate: boolean;
 
 	if (browser) {
-		const unsubscribe = selectedServerId.subscribe((newServerId) => {
-			reloadConsole(newServerId);
-		});
+		async function subscribe() {
+			const serverId = get(selectedServerId);
+			term = new XTerminal(document.getElementById('xterm') as HTMLDivElement);
 
-		const updateConsole = setInterval(
-			() => {
-				updateConsoleIfNeeded();
-			},
-			$settings.consoleRefreshRate * 1000 ?? 5000
-		);
+			sseClient = GetConsoleStream(serverId);
 
+			sseClient.addEventListener('message', function (e: any) {
+				term.push(e.data);
+				scrollToBottomIfAllowed();
+			});
+
+			sseClient.addEventListener('abort', function (e: any) {
+				console.warn('Console stream closed.');
+			});
+		}
+
+		function unsubscribe() {
+			sseClient?.close();
+		}
+
+		onMount(subscribe);
 		onDestroy(unsubscribe);
-		onDestroy(() => clearInterval(updateConsole));
 	}
 
 	beforeUpdate(() => {
@@ -45,11 +56,12 @@
 
 	afterUpdate(() => {
 		if (consoleRequiresUpdate) {
-			scrollToBottom();
+			scrollToBottomIfAllowed();
 		}
 	});
 
-	async function reloadConsole(serverId: string) {
+	async function reloadConsole() {
+		const serverId = get(selectedServerId);
 		if (!serverId) {
 			return;
 		}
@@ -59,39 +71,8 @@
 		getServerConsole(
 			serverId,
 			(consoleLines: string[]) => {
-				serverConsole = consoleLines;
-				scrollToBottom();
-			},
-			(wasSuccess: boolean) => {
-				loadingConsole = false;
-			}
-		);
-	}
-
-	async function updateConsoleIfNeeded() {
-		const serverId = get(selectedServerId);
-
-		if (!serverId) {
-			return;
-		}
-
-		loadingConsole = true;
-
-		let lines = textarea.value.split('\n');
-		let length: number = lines.length - 1;
-
-		let secondLastLine: string = encodeURIComponent(lines[length - 1]);
-		let lastLine: string = encodeURIComponent(lines[length]);
-
-		getIsServerConsoleOutdated(
-			serverId,
-			secondLastLine,
-			lastLine,
-			(isOutdated: boolean) => {
-				if (isOutdated) {
-					reloadConsole(serverId);
-					scrollToBottom();
-				}
+				term.update(consoleLines);
+				scrollToBottomIfAllowed();
 			},
 			(wasSuccess: boolean) => {
 				loadingConsole = false;
@@ -109,21 +90,23 @@
 		consoleInput = '';
 	}
 
-	function scrollToBottom() {
+	function scrollToBottomIfAllowed() {
 		if (get(settings).autoScrollConsole) {
-			textarea?.scrollTo(0, textarea.scrollHeight);
+			term.scroll();
 		}
 	}
 
 	function clearConsole() {
-		serverConsole = [];
+		term.clear();
 	}
 
 	function toggleChatMode() {
 		$settings.chatModeConsole = !get(settings).chatModeConsole;
 	}
 
-	//FUTURE add console features: reload, clear, download
+	function toggleAutoScroll() {
+		$settings.autoScrollConsole = !get(settings).autoScrollConsole;
+	}
 </script>
 
 <div class="w-full border border-b-0 border-gray-200 rounded-b-none rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
@@ -131,27 +114,33 @@
 		<div class="flex flex-wrap items-center divide-gray-200 sm:divide-x dark:divide-gray-600">
 			<div class="flex items-center space-x-1 sm:pr-4">
 				<h2 class="font-semibold text-gray-700 dark:text-gray-300">Console</h2>
-				<button on:click={() => reloadConsole} disabled={loadingConsole} class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 disabled:text-zinc-800 disabled:pointer-events-none">
+				<button on:click={reloadConsole} disabled={loadingConsole} class="p-2 text-gray-500 rounded cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 disabled:text-zinc-800 disabled:pointer-events-none">
 					<Icon data={mdiRefresh} size={5} class={loadingConsole ? 'animate-spin' : ''} />
 				</button>
 			</div>
 		</div>
-		<div class="flex items-center text-xs cursor-pointer">
-			<input
-				bind:checked={$settings.autoScrollConsole}
-				id="autoScrollConsole"
-				type="checkbox"
-				value=""
-				class="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-			/>
-			<label for="autoScrollConsole" class="ml-2 text-sm cursor-pointer select-none font-medium text-gray-900 dark:text-gray-300">Auto scroll</label>
+		<div class="flex items-center text-xs space-x-2">
+			<form on:submit|preventDefault={toggleAutoScroll}>
+				<button id="autoScrollPopup" type="submit" class="p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100 {$settings.autoScrollConsole ? 'text-gray-400 dark:text-gray-400' : 'text-red-400 dark:text-red-400'}  dark:hover:bg-gray-600">
+					<Icon data={mdiArrowVerticalLock} size={6} />
+					<span class="sr-only">Auto Scroll</span>
+				</button>
+			</form>
+
+			<form on:submit|preventDefault={clearConsole}>
+				<button id="clearConsole" type="submit" class="p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-600 dark:hover:text-red-500">
+					<Icon data={mdiTextBoxRemove} size={6} />
+					<span class="sr-only">Clear Console</span>
+				</button>
+			</form>
 		</div>
 	</div>
-	<div class="bg-white dark:bg-gray-800">
-		<!-- don't put tabs before </textarea> -->
-		<!-- this messes up the getIsServerConsoleOutdated check -->
-		<textarea bind:this={textarea} id="console" readonly class="block w-full {fillScreen ? 'h-[calc(100vh-275px)]' : 'h-96'} font-consolas md:px-5 px-2 text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400">{serverConsole}</textarea>
+	<div class="bg-white dark:bg-gray-800 pl-3 pt-3">
+		<div id="xterm" style="width: 99%;" class="block {fillScreen ? 'h-[calc(100vh-275px)]' : 'h-96'} font-consolas text-sm text-gray-800 bg-white border-0 dark:bg-gray-800 focus:ring-0 dark:text-white dark:placeholder-gray-400"></div>
 	</div>
+
+	<Popover arrow={false} triggeredBy="[id^='autoScrollPopup']" placement="bottom" class="w-64 text-sm font-light " title="Auto Scroll {$settings.autoScrollConsole ? 'Enabled (default)' : 'Disabled'}">Automatically scroll the console to the latest message.</Popover>
+	<Popover arrow={false} triggeredBy="[id^='clearConsole']" placement="bottom" class="w-64 text-sm font-light text-red-500" title="Clear Console">Wipe all text from the console (current session).</Popover>
 </div>
 
 {#key $selectedServerId}
@@ -172,9 +161,9 @@
 					placeholder="Enter command e.g. /say hello"
 					class="block mx-4 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 				/>
-				<button type="submit" class="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
+				<button type="submit" class="inline-flex justify-center p-2 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600">
 					<Icon data={mdiSend} size={6} />
-					<span class="sr-only">Send</span>
+					<span class="sr-only">Send Message</span>
 				</button>
 			</div>
 		</form>

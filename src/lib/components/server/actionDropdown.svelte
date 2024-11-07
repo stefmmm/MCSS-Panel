@@ -20,8 +20,6 @@
 	}
 
 	function serverActionClick(action: any) {
-		console.log('action');
-		console.log(action);
 		dropdownVisible = false;
 		const serverId = get(selectedServerId);
 		if (!serverId) {

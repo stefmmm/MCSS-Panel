@@ -130,8 +130,6 @@
 	}
 
 	function handleTaskJobServerActionInput(event: any) {
-		console.log('event.detail');
-		console.log(event.detail);
 		jobToCreateOrEdit = new ServerActionJobTask(event.detail.id, event.detail.enabled, event.detail.order, event.detail.action);
 		areModalButtonsDisabled = false;
 	}
