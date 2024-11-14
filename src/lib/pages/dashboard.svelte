@@ -2,7 +2,7 @@
 	import { getServers } from '$lib/code/api';
 	import { hasPermission, Permission } from '$lib/code/permissions';
 	import { mdiRefresh } from '@mdi/js';
-	import { selectedServer } from '$lib/code/global';
+	import { selectedServer, selectedServerId } from '$lib/code/global';
 	import ConsoleComponent from '$lib/components/server/console.svelte';
 	import Icon from '$lib/components/elements/icon.svelte';
 	import ActionDropdown from '$lib/components/server/actionDropdown.svelte';
@@ -35,23 +35,25 @@
 		</div>
 		<div class="self-center">
 			<span class="sr-only">Reload UI</span>
-			{#if hasPermission(Permission.useServerActions, $selectedServer?.serverId)}
+			{#if hasPermission(Permission.useServerActions, $selectedServerId)}
 				<ActionDropdown statusName={getFriendlyStatusName($selectedServer?.status)} />
 			{/if}
 		</div>
 	</ServerSelector>
 
-	{#if $selectedServer?.serverId}
-		{#if hasPermission(Permission.viewStats, $selectedServer?.serverId)}
-			<Statistics />
-		{/if}
+	{#key $selectedServerId}
+		{#if $selectedServerId}
+			{#if hasPermission(Permission.viewStats, $selectedServerId)}
+				<Statistics />
+			{/if}
 
-		{#if hasPermission(Permission.viewConsole, $selectedServer?.serverId)}
-			<ConsoleComponent bind:this={consoleComponent} />
+			{#if hasPermission(Permission.viewConsole, $selectedServerId)}
+				<ConsoleComponent bind:this={consoleComponent} />
+			{/if}
+		{:else}
+			<div class="text-center">
+				<span class="text-sm font-medium italic text-slate-400">No server selected.</span>
+			</div>
 		{/if}
-	{:else}
-		<div class="text-center">
-			<span class="text-sm font-medium italic text-slate-400">No server selected.</span>
-		</div>
-	{/if}
+	{/key}
 </section>

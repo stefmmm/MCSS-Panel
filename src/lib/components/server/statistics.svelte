@@ -21,17 +21,17 @@
 	let isLoadingStats: boolean = true;
 
 	if (browser) {
-		const unsubscribe = selectedServerId.subscribe((newServerId) => {
+		function unsubscribe() {
+			clearInterval(updateConsole);
 			isLoadingStats = true;
 			updateServerStats();
-		});
+		}
 
 		const updateConsole = setInterval(() => {
 			updateServerStats();
 		}, 2000);
 
 		onDestroy(unsubscribe);
-		onDestroy(() => clearInterval(updateConsole));
 	}
 
 	async function updateServerStats() {

@@ -78,7 +78,7 @@ export default class XTerminal {
     }
 
     resize() {
-        this.fitAddon.fit();
+        this.fitAddon?.fit();
     }
 
     update(consoleLines: string[]) {
@@ -90,20 +90,20 @@ export default class XTerminal {
     }
 
     push(line: string) {
-        this.terminal.writeln(this.minecraftToAnsiColor(line) + "\x1b[0m");
+        this.terminal?.writeln(this.minecraftToAnsiColor(line) + "\x1b[0m");
     }
 
     scroll() {
-        this.terminal.scrollToBottom();
-        this.fitAddon.fit();
+        this.terminal?.scrollToBottom();
+        this.fitAddon?.fit();
     }
 
     getLines() {
-        return this.terminal.getLines();
+        return this.terminal?.getLines();
     }
 
     clear() {
-        this.terminal.clear();
-        this.fitAddon.fit();
+        this.terminal?.clear();
+        this.fitAddon?.fit();
     }
 }

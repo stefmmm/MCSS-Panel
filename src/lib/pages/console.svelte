@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { hasPermission, Permission } from '$lib/code/permissions';
-	import Console from '$lib/components/server/console.svelte';
+	import ConsoleComponent from '$lib/components/server/console.svelte';
 	import { selectedServerId } from '$lib/code/global';
 	import ServerSelector from '$lib/components/server/serverSelector.svelte';
 	import { mdiRefresh } from '@mdi/js';
@@ -33,17 +33,17 @@
 		</div>
 	</ServerSelector>
 
-	{#if $selectedServerId}
-		{#key $selectedServerId}
+	{#key $selectedServerId}
+		{#if $selectedServerId}
 			{#if hasPermission(Permission.viewConsole, $selectedServerId)}
-				<Console bind:this={consoleComponent} fillScreen={true} />
+				<ConsoleComponent bind:this={consoleComponent} fillScreen={true} />
 			{:else}
 				<p>You don't have permission to view the console.</p>
 			{/if}
-		{/key}
-	{:else}
-		<div class="text-center">
-			<span class="text-sm font-medium italic text-slate-400">No server selected.</span>
-		</div>
-	{/if}
+		{:else}
+			<div class="text-center">
+				<span class="text-sm font-medium italic text-slate-400">No server selected.</span>
+			</div>
+		{/if}
+	{/key}
 </section>
